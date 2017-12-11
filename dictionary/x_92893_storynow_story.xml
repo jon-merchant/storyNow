@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database>
+    <element label="Story" max_length="40" name="x_92893_storynow_story" type="collection">
+        <element label="Acceptance Criteria" max_length="8000" name="acceptance_criteria" type="html"/>
+        <element label="Description" max_length="8000" name="description" type="html"/>
+        <element label="Goal Type" max_length="32" name="goal_types" reference="x_92893_storynow_goal_types" type="reference"/>
+        <element attributes="ignore_filter_on_new=true" default="javascript:global.getNextObjNumberPadded();" label="Number" max_length="40" name="number" type="string"/>
+        <element label="Reason Type" max_length="32" name="reason_type" reference="x_92893_storynow_reason_types" type="reference"/>
+        <element label="Story Type" max_length="32" name="story_type" reference="x_92893_storynow_story_types" type="reference"/>
+        <element default="javascript:current.getTableName();" label="Class" max_length="80" name="sys_class_name" type="sys_class_name"/>
+        <element attributes="edge_encryption_enabled=true" label="Title" max_length="40" name="title" type="string"/>
+        <element label="User Type" max_length="32" name="user_type" reference="x_92893_storynow_user_types" type="reference"/>
+        <index name="index">
+            <element name="story_type"/>
+        </index>
+        <index name="index2">
+            <element name="user_type"/>
+        </index>
+        <index name="index3">
+            <element name="reason_type"/>
+        </index>
+        <index name="index4">
+            <element name="goal_types"/>
+        </index>
+    </element>
+</database>

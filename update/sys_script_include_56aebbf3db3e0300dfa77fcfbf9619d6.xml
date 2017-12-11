@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_92893_storynow.storyNow_DAO</api_name>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>storyNow_DAO</name>
+        <script><![CDATA[var storyNow_DAO = Class.create();
+storyNow_DAO.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+
+	_getType: function(table,sys_id) {
+		var gr = new GlideRecord(table);
+		gr.get(sys_id);
+		var obj = {
+			sys_id:gr.getUniqueValue(),
+			value:gr.getValue('value'),
+			display_value:gr.getDisplayValue('value')
+		};
+		return obj;
+	},
+	_getComps: function(sys_id) {
+		var recObj = {};
+		var records = [];
+		var gr = new GlideRecord('x_92893_storynow_story_components');
+		gr.addEncodedQuery('story='+sys_id);
+		gr.query();
+		while(gr.next()) {
+			records.push({
+				sys_id:gr.getUniqueValue(),
+				title:gr.getDisplayValue('title')
+			});
+			
+		}
+		recObj.total_count = gr.getRowCount();
+		recObj.records = records;
+		
+		return recObj;
+	},
+	getStoryRecords: function(table,query,orderDir,orderBy) {
+		var records = [];
+		
+		var gr = new GlideRecord(table);
+		gr.addEncodedQuery(query);
+		if (orderDir == 'desc') {
+			gr.orderByDesc(orderBy);
+		} else {
+			gr.orderBy(orderBy);
+		}		
+		
+		gr.query();
+		while(gr.next()) {
+			var obj = {
+				sys_id:gr.getUniqueValue(),
+				title:gr.getDisplayValue('title'),
+				description:gr.getValue('description'),
+				story_type:this._getType('x_92893_storynow_story_types',gr.getValue('story_type')),
+				user_type:this._getType('x_92893_storynow_user_types',gr.getValue('user_type')),
+				goal_type:this._getType('x_92893_storynow_goal_types',gr.getValue('goal_type')),
+				reason_type:this._getType('x_92893_storynow_reason_types',gr.getValue('reason_type')),
+				components:this._getComps(gr.getUniqueValue())
+			};
+			
+			records.push(obj);
+		}
+		var recordObj = {};
+		recordObj.total_count = gr.getRowCount();
+		recordObj.records = records;
+		recordObj.query = gr.getEncodedQuery();
+		return recordObj;
+	},
+    type: 'storyNow_DAO'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-12-10 05:16:44</sys_created_on>
+        <sys_customer_update>false</sys_customer_update>
+        <sys_id>56aebbf3db3e0300dfa77fcfbf9619d6</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>storyNow_DAO</sys_name>
+        <sys_package display_value="storyNow" source="x_92893_storynow">e939e3b7dbfa0300dfa77fcfbf96199c</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
+        <sys_scope display_value="storyNow">e939e3b7dbfa0300dfa77fcfbf96199c</sys_scope>
+        <sys_update_name>sys_script_include_56aebbf3db3e0300dfa77fcfbf9619d6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-11 20:56:24</sys_updated_on>
+    </sys_script_include>
+</record_update>

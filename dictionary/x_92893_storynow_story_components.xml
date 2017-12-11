@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database>
+    <element label="Story Components" max_length="40" name="x_92893_storynow_story_components" type="collection">
+        <element label="Acceptance Criteria" max_length="8000" name="acceptance_criteria" type="html"/>
+        <element label="Description" max_length="8000" name="description" type="html"/>
+        <element choice="1" label="Estimate" max_length="40" name="estimate" type="choice">
+            <choice>
+                <element label="1" value="1"/>
+                <element label="2" value="2"/>
+                <element label="3" value="3"/>
+                <element label="5" value="5"/>
+                <element label="8" value="8"/>
+            </choice>
+        </element>
+        <element attributes="ignore_filter_on_new=true" default="javascript:global.getNextObjNumberPadded();" label="Number" max_length="40" name="number" type="string"/>
+        <element label="Parent" max_length="32" name="parent" reference="x_92893_storynow_story_components" type="reference"/>
+        <element label="Story" max_length="32" name="story" reference="x_92893_storynow_story" type="reference"/>
+        <element default="javascript:current.getTableName();" label="Class" max_length="80" name="sys_class_name" type="sys_class_name"/>
+        <element label="Title" max_length="40" name="title" type="string"/>
+        <index name="index">
+            <element name="parent"/>
+        </index>
+        <index name="index2">
+            <element name="story"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update>
+    <sys_documentation element="" label="Reason Types" language="en" table="x_92893_storynow_reason_types">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element/>
+            <help/>
+            <hint/>
+            <label>Reason Types</label>
+            <language>en</language>
+            <name>x_92893_storynow_reason_types</name>
+            <plural>Reason Types</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-12-10 04:23:43</sys_created_on>
+            <sys_customer_update>false</sys_customer_update>
+            <sys_id>c792bb3fdbfa0300dfa77fcfbf961952</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Reason Types</sys_name>
+            <sys_package display_value="storyNow" source="x_92893_storynow">e939e3b7dbfa0300dfa77fcfbf96199c</sys_package>
+            <sys_policy/>
+            <sys_replace_on_upgrade>false</sys_replace_on_upgrade>
+            <sys_scope display_value="storyNow">e939e3b7dbfa0300dfa77fcfbf96199c</sys_scope>
+            <sys_update_name>sys_documentation_x_92893_storynow_reason_types__en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-12-10 04:23:43</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>
