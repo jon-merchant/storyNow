@@ -1,10 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <record_update table="sp_widget">
     <sp_widget action="INSERT_OR_UPDATE">
-        <client_script><![CDATA[function($scope,$rootScope,$timeout) {
+        <client_script><![CDATA[function($scope,$rootScope,$timeout,$uibModal,spUtil) {
   /* widget controller */
   var c = this;
 	$scope.template = 'new_story';
+	$scope.selectedRecord = $rootScope.initialRecord;
+	$scope.trixInitialize = function(e, editor) {}
+	
+	$scope.sOptions = {
+		height: 300,
+		toolbar: [
+            ['edit',['undo','redo']],
+            ['headline', ['style']],
+            ['style', ['bold', 'italic', 'underline', 'superscript', 'subscript', 'strikethrough', 'clear']],
+            ['alignment', ['ul', 'ol', 'paragraph', 'lineheight']],
+            ['height', ['height']],
+            ['table', ['table']],
+            ['insert', ['hr']],
+            ['view', ['fullscreen', 'codeview']],
+            ['help', ['help']]
+        ]
+    
+	}
+	
+	$scope.componentList = {
+		displayValue: '',
+		value: '',
+		name: 'componentList'
+	};
+	$scope.$watch('componentList',function(newVal,oldVal) {
+		console.log("Watching",newVal,oldVal);
+	})
+
+	$scope.$on("field.change", function(evt, parms) {
+		if (parms.field.name == 'componentList') {
+			//c.data.setLocation = parms.newValue;
+			console.log("Field Change component",parms.newValue);
+			c.data.story_component = {
+				sys_id:parms.newValue
+			}
+			c.server.update().then(function(response) {
+				$scope.modalData.component = response.modalData.component;
+				$scope.modalData.component.title += ' [Copy]'; 
+				
+				spUtil.update($scope);
+				console.log("response",response,$scope.modalData);
+			})
+			//this on is to copy values into the form
+		}
+
+		/*c.server.update().then(function(response) {
+			spUtil.update($scope);
+		})*/
+	});
 	
 	$scope.$on('controlButton_add',function(event,data) {
 		$timeout(function() {
@@ -17,35 +66,193 @@
 	
 	$scope.$on('selectedRecord',function(event,data) {
 		$timeout(function() {
+			
 			console.log("selectedRecord",data);
-		},100)
-	})
+			$scope.selectedRecord = data;
+			
+			if (!$scope.selectedRecord.description) {
+				$scope.selectedRecord.description = "//Add Description";
+			}
+		})
+	});
+
+	c.openModal = function(tpl,data) {
+		delete $scope.modalData;
+		console.log("After Delete",$scope.modalData);
+		$scope.modalData = data;
+		c.modalInstance = $uibModal.open({
+			templateUrl: tpl,
+			backdrop:'static',
+			keyboard:false,
+			scope: $scope
+		});
+		console.log("Open Modal",$scope.modalData);
+	}
+ 
+	c.closeModal = function() {
+		c.modalInstance.close();
+		
+	}
+	$scope.showHelp = function(help) {
+		//story_description_help
+		var d = {};
+		d.text = c.options[help];
+		d.title = toTitleCase(help.replace(/_/g," "));
+		
+		
+		c.openModal('showHelp',d);
+	}
 	
+	$scope.popEditThis = function(record,t) {
+		record.editThis = t;
+		console.log(record[record.editThis]);
+		c.openModal('modalEditor',record);	
+	}
+	$scope.saveModalEditor = function(data) {
+		console.log(data);
+	}
+	$scope.copyAutoStoryToDesc = function(selectedRecord) {
+		var ags = angular.element( document.querySelector( '#autoGenStory' ) );
+		ags = ags.text().replace(/[\[\]']+/g,'');
+		$scope.selectedRecord.description = ags;
+		console.log(ags);
+	}
+	
+	$scope.getPronouns = function(user_type,rtn) {
+		var response = [];
+		response.push({
+			l:'I',
+			u:'I'
+		});
+
+
+		return response[0][rtn];
+	}
+	
+	$scope.recordAction = function(action,record) {
+		var obj = {}
+		var editor = [];
+		
+		var element = document.querySelectorAll("trix-editor")
+		console.log("recordAction",record,element);
+		for (var i=0;i<element.length;i++) {
+			console.log(element[i].attributes[0].nodeValue);
+			console.log(element[i].innerHTML); //get raw - processed by console
+			editor.push({
+				name:getRecordEditorName(element[i].attributes[0].nodeValue),
+				value:element[i].editor.getDocument().toString()
+			});
+		
+		}
+		console.log(editor);
+	}
+	
+	function toTitleCase(str)
+	{
+			return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+	}
+	
+	function getRecordEditorName(str) {
+		var check = str.indexOf('storyComp');
+		console.log(typeof str,check);
+		if (check >= 0) {
+			var n = str.split('_');
+			console.log(n);
+			return n[1];
+		}
+		return str;
+	}
+
+	$scope.addComponent = function(record) {
+		
+		console.log("record",record);
+		if (record.compType) {
+			delete record.compType;
+		}
+		/*if (record.acceptance_criteria) {
+			delete record.acceptance_criteria;
+		}
+		if (record.description) {
+			delete record.description;
+		}*/
+		c.openModal('componentEditor',record);
+		
+	}
+	$scope.storyComp = function(action) {
+		if (action == 'add') {
+			$scope.modalData.component = {
+				acceptance_criteria: '',
+				description: '',
+				sys_id: '',
+				title: ''
+			}
+			$scope.componentList = {
+				displayValue: '',
+				value: '',
+				name: 'componentList'
+			}
+		} 
+		console.log("Component",action);
+		$scope.modalData.compType = action;
+		console.log("ModalData",$scope.modalData);
+		
+	}
 	console.log("storyBuilder",$scope);
 }]]></client_script>
         <controller_as>c</controller_as>
-        <css/>
+        <css>.auto-story p {
+  font-style: italic;
+}
+.generated-text {
+  font-style: normal;
+  font-family: Consolas, monaco, monospace;
+  font-size: 12px;
+  background-color: transparentize(yellow,0.5);
+}
+
+.current-text {
+  display: block;
+  padding: 5px;
+  border: 1px solid #d6d6d6;
+  background: #e1e1e1;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+</css>
         <data_table>sp_instance</data_table>
         <demo_data/>
         <description/>
         <docs/>
         <field_list/>
         <has_preview>false</has_preview>
-        <id>storynow_builder</id>
+        <id>storynow-builder</id>
         <internal>false</internal>
         <link/>
         <name>storyNow Builder</name>
-        <option_schema/>
+        <option_schema>[{"name":"show_story_description_help","default_value":"false","label":"Show Story Description Help","type":"boolean"},{"name":"story_description_help","default_value":"User stories are one of the primary development artifacts for Scrum and Extreme Programming (XP) project teams. A user story is a very high-level definition of a requirement, containing just enough information so that the developers can produce a reasonable estimate of the effort to implement it. ... Detailing a user story.","label":"Story Description Help","type":"string"}]</option_schema>
         <public>false</public>
         <roles/>
-        <script><![CDATA[(function() {  /* populate the 'data' object */  /* e.g., data.table = $sp.getValue('table'); */})();]]></script>
+        <script><![CDATA[(function() {
+  /* populate the 'data' object */
+  /* e.g., data.table = $sp.getValue('table'); */
+
+	
+	if (input) {
+		if (input.story_component && input.story_component.sys_id) {
+			console.log(input.story_component.sys_id);
+			data.modalData = {};
+			data.modalData.component = new storyNow_DAO().getComponent(input.story_component.sys_id);
+		}
+	}
+	
+})();]]></script>
         <servicenow>false</servicenow>
         <sys_class_name>sp_widget</sys_class_name>
         <sys_created_by>admin</sys_created_by>
         <sys_created_on>2017-12-11 16:36:46</sys_created_on>
         <sys_customer_update>false</sys_customer_update>
         <sys_id>47f3a7d8db030300dfa77fcfbf961942</sys_id>
-        <sys_mod_count>7</sys_mod_count>
+        <sys_mod_count>236</sys_mod_count>
         <sys_name>storyNow Builder</sys_name>
         <sys_package display_value="storyNow" source="x_92893_storynow">e939e3b7dbfa0300dfa77fcfbf96199c</sys_package>
         <sys_policy/>
@@ -53,10 +260,175 @@
         <sys_scope display_value="storyNow">e939e3b7dbfa0300dfa77fcfbf96199c</sys_scope>
         <sys_update_name>sp_widget_47f3a7d8db030300dfa77fcfbf961942</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2017-12-11 23:29:13</sys_updated_on>
+        <sys_updated_on>2018-01-27 15:01:51</sys_updated_on>
         <template><![CDATA[<div>
 <!-- your widget template -->
-  <div ng-include="template"></div>
-</div>]]></template>
+  <div ng-if="!selectedRecord.sys_id">
+  <h3>New Story</h3>
+  
+  
+</div>
+<div ng-if="selectedRecord.sys_id">
+  <div class="story-heading clearfix">
+    <div class="pull-left">
+		<h3>Edit Story - {{selectedRecord.title}}</h3>
+    </div>
+    <div class="pull-right">
+      <h3>
+        <button class="btn btn-success">Generate Description</button>
+        <button class="btn btn-success">Generate Acceptance Criteria</button>
+      </h3>
+    </div>
+  </div>
+  <div class="auto-story">
+    <h4>Auto Generated User Story</h4>
+    <p id="autoGenStory">As a <span class="generated-text">[{{selectedRecord.user_type.display_value}}]</span> {{getPronouns(selectedRecord.user_type.display_value,'u')}} want to, <span class="generated-text">[{{selectedRecord.goal_type.display_value}}]</span> so that {{getPronouns(selectedRecord.user_type.display_value,'u')}} can, <span class="generated-text">[{{selectedRecord.reason_type.display_value}}].</span></p>
+  </div>
+  <div class="story-description">
+	<div class="form-group">
+		<label class="h4">Description <i class="fa fa-question-circle" aria-hidden="true" ng-if="c.options.show_story_description_help == 'true'" ng-click="showHelp('story_description_help')"></i></label>
+    <div class="current-text" ng-bind-html="selectedRecord.description"></div>
+    
+     <button class="btn btn-primary" ng-click="popEditThis(selectedRecord,'description')">
+       <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+    </button> 
+    <button class="btn btn-primary" ng-click="copyAutoStoryToDesc(selectedRecord)">
+      <i class="fa fa-files-o" aria-hidden="true"></i>
+    </button>
+	</div>
+   
+  </div>
+  <div class="story-acceptance">
+    <div class="form-group">
+      <label class="h4">Acceptance Criteria</label>
+      <div class="current-text" ng-bind-html="selectedRecord.acceptance_criteria"></div>
+      <button class="btn btn-primary" ng-click="popEditThis(selectedRecord,'acceptance_criteria')">
+       <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+    	</button> 
+    	<button class="btn btn-primary" ng-click="buildAcceptanceFromComponents(selectedRecord.sys_id)">
+        <i class="fa fa-list-alt" aria-hidden="true"></i>
+      </button>
+      <!--<input id="storyAcceptance" type="hidden" name="content" value="{{selectedRecord.acceptance_criteria}}">
+  		<trix-editor input="storyAcceptance" ng-model="selectedRecord.acceptance_criteria"></trix-editor>	-->
+  </div>
+  <div class="story-components">
+    <div class="story-components-heading">
+      <label class="h4">Story Components <i class="fa fa-plus-circle" aria-hidden="true" ng-click="addComponent(selectedRecord)"></i></label>
+    </div>
+  	<div class="panel-group" id="accordion">
+      <div class="panel panel-default" ng-repeat="comp in selectedRecord.components.records" ng-init="compIndex = $index+3">
+        <div class="panel-heading">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{$index}}">
+            {{comp.title}} {{compIndex}}</a>
+          </h4>
+        </div>
+        <div id="collapse{{$index}}" class="panel-collapse collapse">
+          <div class="panel-body">
+          	<div class="description">
+            	<!--<input id="storyComp_{{comp.sys_id}}" type="hidden" name="content" value="{{comp.description}}">
+  						<trix-editor trix-id="{{compIndex}}" input="storyComp_{{comp.sys_id}}" ng-model="comp.description"></trix-editor>	-->
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="">
+   	<!-- add kb related list --> 
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-success" ng-click="recordAction('update',selectedRecord)">Update</button>  
+  </div>
+</div>
+
+</div>
+<script type="text/ng-template" id="showHelp">
+	<div class="panel panel-warning">
+  	<div class="panel-heading">{{modalData.title}}</div>
+    <div class="panel-body">
+    	{{modalData.text}}
+    </div>
+    <div class="panel-footer clearfix">
+    	<div class="pull-right">
+      	<button class="btn btn-danger" ng-click="c.closeModal()">Close</button>
+     	</div>
+    </div>
+  </div>
+</script>
+<script type="text/ng-template" id="componentEditor">
+	<div class="panel panel-info">
+  	<div class="panel-heading">Add Component for {{modalData.title}}</div>
+    <div class="panel-body">
+    	<form>
+      	<div>
+        	<div class="radio">
+          	<div><label><input type="radio" name="copyNew" ng-click="storyComp('copy')"/>Copy Existing</label></div>
+            <div><label><input type="radio" name="copyNew" ng-click="storyComp('add')"/>Create New Component</label></div>
+          </div>
+        </div>
+        <div ng-if="modalData.compType == 'copy'">
+          <div class="form-group">
+            <label>Copy Existing Component</label>
+            <sn-record-picker field="componentList" table="'x_92893_storynow_story_components'" display-field="'title'" value-field="'sys_id'" search-fields="'title'" page-size="100" default-query="'story!='+modalData.sys_id+'^ORstoryISEMPTY'"></sn-record-picker>
+          </div>
+          <div class="form-group" ng-if="modalData.component">
+          	<label>Title <span class="yellow-highlight">[Make Unique]</span></label>
+            <input type="text" class="form-control" ng-model="modalData.component.title"/>
+          </div>
+          <div class="form-group" ng-if="modalData.component">
+          	<label>Description</label>
+            <summernote ng-model="modalData.component.description" editor="description" config="sOptions"></summernote>
+          </div>
+          <div class="form-group" ng-if="modalData.component">
+          	<label>Acceptance Criteria</label>
+            <summernote ng-model="modalData.component.acceptance_criteria" editor="acceptance" config="sOptions"></summernote>
+          </div>
+       	</div>
+        <div ng-if="modalData.compType == 'add'">
+          <div class-"form-group">
+            <label>Create New Component</label>
+          </div>
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" class="form-control" ng-model="modalData.component.title"/>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <summernote ng-model="modalData.component.description" editor="description" config="sOptions"></summernote>
+          </div>
+          <div class="form-group">
+            <label>Acceptance Criteria</label>
+            <summernote ng-model="modalData.component.acceptance_criteria" editor="acceptance" config="sOptions"></summernote>
+          </div>
+      	</div>
+      </form>
+      
+    </div>
+     <div class="panel-footer clearfix">
+    	<div class="pull-right">
+      	<button class="btn btn-primary" ng-click="saveModalEditor(modalData)">Save</button>
+      	<button class="btn btn-danger" ng-click="c.closeModal()">Close</button>
+     	</div>
+    </div>
+  </div>
+</script>
+<script type="text/ng-template" id="modalEditor">
+	<div class="panel panel-info">
+  	<div class="panel-heading">Edit {{modalData.editThis}}</div>
+    <div class="panel-body">
+    	<!--<input id="{{modalData.editThis}}" type="hidden" name="content" value="{{modalData.description}}">
+  		<trix-editor input="{{modalData.editThis}}" ng-model="{{modalData.discription}}"></trix-editor>-->
+      <summernote ng-model="modalData[modalData.editThis]" config="sOptions"></summernote>
+    </div>
+    <div class="panel-footer clearfix">
+    	<div class="pull-right">
+      	<button class="btn btn-primary" ng-click="saveModalEditor(modalData)">Save</button>
+        <button class="btn btn-danger" ng-click="c.closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</script>]]></template>
     </sp_widget>
 </record_update>

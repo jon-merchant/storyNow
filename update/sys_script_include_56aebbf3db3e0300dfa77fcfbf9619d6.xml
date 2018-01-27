@@ -29,7 +29,9 @@ storyNow_DAO.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
 		while(gr.next()) {
 			records.push({
 				sys_id:gr.getUniqueValue(),
-				title:gr.getDisplayValue('title')
+				title:gr.getDisplayValue('title'),
+				description:gr.getValue('description'),
+				acceptance_criteria:gr.getValue('acceptance_criteria')
 			});
 			
 		}
@@ -37,6 +39,17 @@ storyNow_DAO.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
 		recObj.records = records;
 		
 		return recObj;
+	},
+	getComponent: function(sys_id) {
+		var gr = new GlideRecord('x_92893_storynow_story_components');
+		gr.get(sys_id);
+		var obj = {
+			sys_id:gr.getUniqueValue(),
+			title:gr.getValue('title'),
+			description:gr.getValue('description'),
+			acceptance_criteria:gr.getValue('acceptance_criteria')
+		};
+		return obj;
 	},
 	getStoryRecords: function(table,query,orderDir,orderBy) {
 		var records = [];
@@ -57,9 +70,10 @@ storyNow_DAO.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
 				description:gr.getValue('description'),
 				story_type:this._getType('x_92893_storynow_story_types',gr.getValue('story_type')),
 				user_type:this._getType('x_92893_storynow_user_types',gr.getValue('user_type')),
-				goal_type:this._getType('x_92893_storynow_goal_types',gr.getValue('goal_type')),
+				goal_type:this._getType('x_92893_storynow_goal_types',gr.getValue('goal_types')),
 				reason_type:this._getType('x_92893_storynow_reason_types',gr.getValue('reason_type')),
-				components:this._getComps(gr.getUniqueValue())
+				components:this._getComps(gr.getUniqueValue()),
+				acceptance_criteria:gr.getValue('acceptance_criteria')
 			};
 			
 			records.push(obj);
@@ -77,7 +91,7 @@ storyNow_DAO.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
         <sys_created_on>2017-12-10 05:16:44</sys_created_on>
         <sys_customer_update>false</sys_customer_update>
         <sys_id>56aebbf3db3e0300dfa77fcfbf9619d6</sys_id>
-        <sys_mod_count>14</sys_mod_count>
+        <sys_mod_count>19</sys_mod_count>
         <sys_name>storyNow_DAO</sys_name>
         <sys_package display_value="storyNow" source="x_92893_storynow">e939e3b7dbfa0300dfa77fcfbf96199c</sys_package>
         <sys_policy>read</sys_policy>
@@ -85,6 +99,6 @@ storyNow_DAO.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
         <sys_scope display_value="storyNow">e939e3b7dbfa0300dfa77fcfbf96199c</sys_scope>
         <sys_update_name>sys_script_include_56aebbf3db3e0300dfa77fcfbf9619d6</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2017-12-11 20:56:24</sys_updated_on>
+        <sys_updated_on>2017-12-27 21:06:44</sys_updated_on>
     </sys_script_include>
 </record_update>
